@@ -11,7 +11,7 @@ import {
   CircleUserRound,
   Cloud,
   Database,
-  FileSparkles,
+  FileText,
   Gauge,
   LoaderCircle,
   Menu,
@@ -85,7 +85,7 @@ const briefs: Record<number, { overview: string; news: string[]; pains: string[]
 const navItems = [
   { id: "dashboard", label: "Painel Principal", icon: Gauge },
   { id: "accounts", label: "Contas Alvo", icon: Target },
-  { id: "briefings", label: "Briefings de IA", icon: FileSparkles },
+  { id: "briefings", label: "Briefings de IA", icon: FileText },
   { id: "settings", label: "Configurações", icon: Settings },
 ] as const;
 
@@ -219,6 +219,7 @@ function SettingRow({ icon: Icon, title, description, enabled, onChange }: { ico
 
 function BriefingPanel({ meeting, onClose, onRegenerate, generating }: { meeting: Meeting; onClose: () => void; onRegenerate: () => void; generating: boolean }) {
   const brief = briefs[meeting.id];
+  if (!brief) return null;
   return <div className="fixed inset-0 z-50 flex justify-end bg-overlay" role="dialog" aria-modal="true" aria-label={`Briefing de ${meeting.company}`} onMouseDown={(e) => { if (e.target === e.currentTarget) onClose(); }}><aside className="h-full w-full overflow-y-auto bg-background shadow-panel sm:max-w-2xl"><div className="sticky top-0 z-10 border-b border-border bg-card/95 px-5 py-4 backdrop-blur"><div className="flex items-center justify-between gap-4"><div className="flex items-center gap-3"><div className="grid size-10 place-items-center rounded-md bg-brand text-brand-foreground"><Sparkles className="size-5" /></div><div><p className="text-xs font-bold uppercase tracking-wider text-brand">Briefing inteligente</p><h2 className="font-display text-lg font-bold">{meeting.company}</h2></div></div><Button variant="ghost" size="icon" onClick={onClose} aria-label="Fechar briefing"><X className="size-5" /></Button></div></div><div className="p-5 sm:p-7"><div className="mb-6 flex flex-wrap items-center gap-2 text-xs"><span className="rounded-full bg-secondary px-3 py-1.5 font-semibold">{meeting.time} · {meeting.contact}</span><span className="rounded-full bg-brand-soft px-3 py-1.5 font-semibold text-brand">Gerado para demonstração</span></div><BriefSection icon={Building2} title="Visão geral da empresa"><p>{brief.overview}</p></BriefSection><BriefSection icon={Activity} title="Últimos sinais de mercado"><ul>{brief.news.map((item) => <li key={item}>{item}</li>)}</ul><p className="mt-3 text-xs italic text-muted-foreground">Notícias simuladas para fins acadêmicos.</p></BriefSection><BriefSection icon={Target} title="Dores identificadas"><ul>{brief.pains.map((item) => <li key={item}>{item}</li>)}</ul></BriefSection><BriefSection icon={TrendingUp} title="Estratégia sugerida pela IA"><p>{brief.strategy}</p></BriefSection><BriefSection icon={UsersRound} title="Argumentos para a conversa"><ul>{brief.talking.map((item) => <li key={item}>{item}</li>)}</ul></BriefSection><BriefSection icon={Cloud} title="Soluções Oracle recomendadas"><div className="flex flex-wrap gap-2">{brief.solutions.map((solution) => <span key={solution} className="rounded-md border border-brand/20 bg-brand-soft px-3 py-2 text-xs font-bold text-brand">{solution}</span>)}</div></BriefSection><Button variant="outline" className="mt-2 w-full" onClick={onRegenerate} disabled={generating}>{generating ? <LoaderCircle className="size-4 animate-spin" /> : <RefreshCw className="size-4" />}{generating ? "Atualizando briefing..." : "Gerar novamente"}</Button></div></aside></div>;
 }
 
