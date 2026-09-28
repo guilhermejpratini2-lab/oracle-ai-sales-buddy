@@ -5,20 +5,25 @@ import { BriefingDialog } from "./briefing-dialog";
 type BriefingState = {
   generatingId: number | null;
   generatedIds: number[];
+  notes: Record<number, string[]>;
   generate: (account: Account) => void;
   open: (account: Account) => void;
+  addNote: (accountId: number, note: string) => void;
 };
 
 const BriefingContext = createContext<BriefingState>({
   generatingId: null,
   generatedIds: [],
+  notes: {},
   generate: () => {},
   open: () => {},
+  addNote: () => {},
 });
 
 export function BriefingProvider({ children }: { children: ReactNode }) {
   const [generatingId, setGeneratingId] = useState<number | null>(null);
   const [generatedIds, setGeneratedIds] = useState<number[]>([2, 4]);
+  const [notes, setNotes] = useState<Record<number, string[]>>({});
   const [selected, setSelected] = useState<Account | null>(null);
 
   const generate = useCallback((account: Account) => {
@@ -30,9 +35,18 @@ export function BriefingProvider({ children }: { children: ReactNode }) {
     }, 900);
   }, []);
 
+  const addNote = useCallback((accountId: number, note: string) => {
+    const trimmed = note.trim();
+    if (!trimmed) return;
+    setNotes((current) => ({
+      ...current,
+      [accountId]: [...(current[accountId] ?? []), trimmed],
+    }));
+  }, []);
+
   const value = useMemo<BriefingState>(
-    () => ({ generatingId, generatedIds, generate, open: setSelected }),
-    [generatingId, generatedIds, generate],
+    () => ({ generatingId, generatedIds, notes, generate, open: setSelected, addNote }),
+    [generatingId, generatedIds, notes, generate, addNote],
   );
 
   return (
@@ -41,8 +55,14 @@ export function BriefingProvider({ children }: { children: ReactNode }) {
       <BriefingDialog
         account={selected}
         generating={selected ? generatingId === selected.id : false}
+        notes={selected ? (notes[selected.id] ?? []) : []}
         onOpenChange={(open) => !open && setSelected(null)}
         onRegenerate={() => selected && generate(selected)}
+        onAddNote={(note) => {
+          if (!selected) return;
+          addNote(selected.id, note);
+          generate(selected);
+        }}
       />
     </BriefingContext.Provider>
   );
